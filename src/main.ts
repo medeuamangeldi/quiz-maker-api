@@ -10,9 +10,13 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
-  // Enable CORS
   app.enableCors({
-    origin: ['https://quiz-maker-mu.vercel.app', 'http://localhost:3000'],
+    origin: [
+      'https://quiz-maker-mu.vercel.app',
+      'http://localhost:3001',
+      'http://localhost:3000',
+    ],
+    credentials: true,
   });
 
   const config = new DocumentBuilder()
