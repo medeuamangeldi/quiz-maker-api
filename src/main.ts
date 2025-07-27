@@ -11,11 +11,20 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      'https://quiz-maker-mu.vercel.app',
-      'http://localhost:3001',
-      'http://localhost:3000',
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://quiz-maker-mu.vercel.app/',
+        'http://localhost:3000',
+        'http://localhost:3001',
+      ];
+
+      // Allow no origin (like Postman) or whitelisted origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
 
