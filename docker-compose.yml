@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: quizmaker-api
     ports:
-      - '3013:3013'
+      - '127.0.0.1:3013:3013'
     depends_on:
       - postgres-quizmaker
     volumes:
