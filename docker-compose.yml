@@ -31,6 +31,8 @@ services:
     networks:
       - quizmaker-network
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
