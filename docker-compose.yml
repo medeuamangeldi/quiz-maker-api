@@ -1,31 +1,45 @@
-version: '3.9'
+# docker-compose.yml
+version: '3.8'
 
 services:
-  db:
-    image: postgres:15
-    container_name: nestjs-postgres
+  postgres-quizmaker:
+    image: postgres:17
     restart: always
     environment:
       - POSTGRES_USER=nestuser
-      - POSTGRES_PASSWORD=nestpass
+      - POSTGRES_PASSWORD=nestpassword
       - POSTGRES_DB=nestdb
-    ports:
-      - '5439:5432'
+      - PGPORT=5438
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  app:
-    build: .
-    container_name: nestjs-app
-    restart: always
-    environment:
-      DATABASE_URL: postgres://nestuser:nestpass@db:5432/nestdb
-      JWT_SECRET: super_secret_jwt_key
+      - postgres:/var/lib/postgresql/data
     ports:
-      - '3033:3033'
+      - '5438:5438'
+    networks:
+      - quizmaker-network
+  quizmaker-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quizmaker-api
+    ports:
+      - '3013:3013'
     depends_on:
-      - db
-    command: ['npm', 'run', 'start:dev'] # or "start:prod" for production
-
+      - postgres-quizmaker
+    volumes:
+      - ./app:/usr/src/app
+      - /usr/src/app/node_modules
+      - /app/prisma
+    networks:
+      - quizmaker-network
+    restart: unless-stopped
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5438
+      - DATABASE_USER=nestuser
+      - DATABASE_PASSWORD=nestpassword
 volumes:
-  postgres_data:
+  postgres:
+    driver: local
+networks:
+  quizmaker-network:
+    external: true

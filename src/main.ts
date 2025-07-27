@@ -12,7 +12,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: 'https://quiz-maker-mu.vercel.app',
+    origin: ['https://quiz-maker-mu.vercel.app', 'http://localhost:3000'],
   });
 
   const config = new DocumentBuilder()
