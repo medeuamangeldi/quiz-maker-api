@@ -6,9 +6,10 @@ services:
     container_name: nestjs-postgres
     restart: always
     environment:
-      POSTGRES_USER: nestuser
-      POSTGRES_PASSWORD: nestpass
-      POSTGRES_DB: nestdb
+      - POSTGRES_USER=nestuser
+      - POSTGRES_PASSWORD=nestpass
+      - POSTGRES_DB=nestdb
+      - PGPORT=5439
     ports:
       - '5439:5439'
     volumes:
@@ -19,7 +20,7 @@ services:
     container_name: nestjs-app
     restart: always
     environment:
-      DATABASE_URL: postgres://nestuser:nestpass@db:5439/nestdb
+      DATABASE_URL: postgres://nestuser:nestpass@postgres:5439/nestdb
       JWT_SECRET: super_secret_jwt_key
     ports:
       - '3033:3033'
