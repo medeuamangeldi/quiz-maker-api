@@ -2,18 +2,17 @@
 version: '3.8'
 
 services:
-  postgres-quizmaker:
+  postgres:
     image: postgres:17
     restart: always
     environment:
-      - POSTGRES_USER=nestuser
-      - POSTGRES_PASSWORD=nestpassword
-      - POSTGRES_DB=nestdb
-      - PGPORT=5438
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=quizmaker-db
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - '5438:5438'
+      - '5438:5432'
     networks:
       - quizmaker-network
   quizmaker-api:
@@ -24,7 +23,7 @@ services:
     ports:
       - '3013:3013'
     depends_on:
-      - postgres-quizmaker
+      - postgres
     volumes:
       - ./app:/usr/src/app
       - /usr/src/app/node_modules
@@ -33,14 +32,13 @@ services:
       - quizmaker-network
     restart: unless-stopped
     environment:
-      - DATABASE_HOST=postgres-quizmaker
-      - DATABASE_PORT=5438
-      - DATABASE_USER=nestuser
-      - DATABASE_PASSWORD=nestpassword
-      - DATABASE_URL=postgres://nestuser:nestpass@postgres-quizmaker:5438/nestdb
-
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
 volumes:
   postgres:
+  minio_data:
     driver: local
 networks:
   quizmaker-network:
