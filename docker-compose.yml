@@ -33,7 +33,7 @@ services:
       - quizmaker-network
     restart: unless-stopped
     environment:
-      - DATABASE_HOST=postgres
+      - DATABASE_HOST=postgres-quizmaker
       - DATABASE_PORT=5438
       - DATABASE_USER=nestuser
       - DATABASE_PASSWORD=nestpassword
