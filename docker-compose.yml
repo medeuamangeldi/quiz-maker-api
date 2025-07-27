@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: quizmaker-api
     ports:
-      - '127.0.0.1:3013:3013'
+      - '3013:3013'
     depends_on:
       - postgres-quizmaker
     volumes:
@@ -37,6 +37,8 @@ services:
       - DATABASE_PORT=5438
       - DATABASE_USER=nestuser
       - DATABASE_PASSWORD=nestpassword
+      - DATABASE_URL=postgres://nestuser:nestpass@postgres-quizmaker:5438/nestdb
+
 volumes:
   postgres:
     driver: local

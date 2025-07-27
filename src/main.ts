@@ -29,6 +29,20 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      res.header(
+        'Access-Control-Allow-Origin',
+        'https://quiz-maker-mu.vercel.app',
+      );
+      res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.sendStatus(204);
+    } else {
+      next();
+    }
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Quiz Maker API')
     .setDescription('API documentation for the Quiz Maker application')
