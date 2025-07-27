@@ -13,6 +13,7 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
+        'https://quiz-maker-mu.vercel.app',
         'https://quiz-maker-mu.vercel.app/',
         'http://localhost:3000',
         'http://localhost:3001',
@@ -37,6 +38,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3013);
 }
 bootstrap();
