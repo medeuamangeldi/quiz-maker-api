@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: nestpass
       POSTGRES_DB: nestdb
     ports:
-      - '5432:5432'
+      - '5439:5439'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -19,10 +19,10 @@ services:
     container_name: nestjs-app
     restart: always
     environment:
-      DATABASE_URL: postgres://nestuser:nestpass@db:5432/nestdb
+      DATABASE_URL: postgres://nestuser:nestpass@db:5439/nestdb
       JWT_SECRET: super_secret_jwt_key
     ports:
-      - '3000:3000'
+      - '3033:3033'
     depends_on:
       - db
     command: ['npm', 'run', 'start:dev'] # or "start:prod" for production
