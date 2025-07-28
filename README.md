@@ -2,6 +2,8 @@
 
 **QuizMaker** — это RESTful API-приложение, реализованное с использованием **NestJS**, **PostgreSQL**, **Prisma ORM** и **OpenAI API**, которое позволяет создавать и проходить интерактивные тесты. Оно поддерживает регистрацию пользователей, авторизацию, создание тестов вручную или с помощью искусственного интеллекта, прохождение тестов и получение рейтингов.
 
+### Frontend Repo: https://github.com/medeuamangeldi/quiz-maker
+
 ## Deploy link: https://quizmaker.gradboosters.com/api
 
 ## Быстрый старт
