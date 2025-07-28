@@ -19,7 +19,6 @@ async function bootstrap() {
         'http://localhost:3001',
       ];
 
-      // Allow no origin (like Postman) or whitelisted origins
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

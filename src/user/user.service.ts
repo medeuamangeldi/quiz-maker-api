@@ -47,4 +47,64 @@ export class UserService {
   ): Promise<boolean> {
     return bcrypt.compare(plainTextPassword, hashedPassword);
   }
+
+  async getMe(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, email: true, testSubmissions: true },
+    });
+
+    if (!user) {
+      throw new ForbiddenException('User not found');
+    }
+
+    return user;
+  }
+
+  async getUserRankings() {
+    const users = await this.prisma.user.findMany({
+      include: {
+        testSubmissions: true,
+      },
+    });
+
+    const rankings = users.map((user) => {
+      const earned = user.testSubmissions.reduce(
+        (a, b) => a + b.earnedPoints,
+        0,
+      );
+      const possible = user.testSubmissions.reduce(
+        (a, b) => a + b.totalPoints,
+        0,
+      );
+      const avgScore = possible ? earned / possible : 0;
+
+      return {
+        id: user.id,
+        username: user.username,
+        totalEarned: earned,
+        totalPossible: possible,
+        averageScore: Number((avgScore * 100).toFixed(2)),
+      };
+    });
+
+    return rankings.sort((a, b) => b.totalEarned - a.totalEarned);
+  }
+
+  async getTopPerformersByTest(testId: number, limit = 10) {
+    const submissions = await this.prisma.testSubmission.findMany({
+      where: { testId },
+      include: { user: true },
+      orderBy: { earnedPoints: 'desc' },
+      take: limit,
+    });
+
+    return submissions.map((sub) => ({
+      userId: sub.userId,
+      username: sub.user.username,
+      earnedPoints: sub.earnedPoints,
+      totalPoints: sub.totalPoints,
+      submittedAt: sub.createdAt,
+    }));
+  }
 }

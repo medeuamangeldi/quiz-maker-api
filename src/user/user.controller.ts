@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,7 +28,7 @@ export class UserController {
     return await this.userService.create(username, email, password);
   }
 
-  @UseGuards(JwtAuthGuard) // Protect this route with JWT Auth Guard
+  @UseGuards(JwtAuthGuard)
   @Get('email/:email')
   @ApiOperation({ summary: 'Get user by email' })
   @ApiResponse({ status: 200, description: 'User found' })
@@ -28,12 +37,31 @@ export class UserController {
     return await this.userService.findByEmail(email);
   }
 
-  @UseGuards(JwtAuthGuard) // Protect this route with JWT Auth Guard
+  @UseGuards(JwtAuthGuard)
   @Get('username/:username')
   @ApiOperation({ summary: 'Get user by username' })
   @ApiResponse({ status: 200, description: 'User found' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getByUsername(@Param('username') username: string) {
     return await this.userService.findByUsername(username);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@Req() req) {
+    const userId = req.user.userId;
+    return this.userService.getMe(userId as number);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('rankings')
+  async getUserRankings() {
+    return await this.userService.getUserRankings();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':testId/top-performers')
+  async getTopPerformers(@Param('testId', ParseIntPipe) testId: number) {
+    return this.userService.getTopPerformersByTest(testId);
   }
 }

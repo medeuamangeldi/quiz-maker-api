@@ -19,6 +19,7 @@ model User {
   username  String   @unique
   email     String   @unique
   password  String
+  testSubmissions TestSubmission[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -28,6 +29,7 @@ model Test {
   title     String
   tags      String[]
   questions Question[]
+  testSubmissions TestSubmission[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -35,11 +37,27 @@ model Test {
 model Question {
   id             Int      @id @default(autoincrement())
   text           String
-  type           String // "single" | "multiple" | "text"
-  options        String[] // optional for text type
+  type           String
+  options        String[]
   correctAnswers String[]
   points         Int
   testId         Int
   test           Test     @relation(fields: [testId], references: [id])
 }
+
+model TestSubmission {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  testId        Int
+  answers       Json
+  earnedPoints  Int
+  totalPoints   Int
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+  test          Test      @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])
+}
+
 
