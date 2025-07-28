@@ -64,4 +64,14 @@ export class UserController {
   async getTopPerformers(@Param('testId', ParseIntPipe) testId: number) {
     return this.userService.getTopPerformersByTest(testId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my-ranking')
+  @ApiOperation({ summary: 'Get current user ranking' })
+  @ApiResponse({ status: 200, description: 'User ranking returned' })
+  @ApiResponse({ status: 403, description: 'User not found or unauthorized' })
+  async getMyRanking(@Req() req) {
+    const userId = req.user.userId;
+    return this.userService.getMyRanking(userId as number);
+  }
 }

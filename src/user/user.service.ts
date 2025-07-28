@@ -107,4 +107,48 @@ export class UserService {
       submittedAt: sub.createdAt,
     }));
   }
+
+  async getMyRanking(userId: number) {
+    const users = await this.prisma.user.findMany({
+      include: {
+        testSubmissions: true,
+      },
+    });
+
+    const rankings = users.map((user) => {
+      const earned = user.testSubmissions.reduce(
+        (a, b) => a + b.earnedPoints,
+        0,
+      );
+      const possible = user.testSubmissions.reduce(
+        (a, b) => a + b.totalPoints,
+        0,
+      );
+      const avgScore = possible ? earned / possible : 0;
+
+      return {
+        id: user.id,
+        username: user.username,
+        totalEarned: earned,
+        totalPossible: possible,
+        averageScore: Number((avgScore * 100).toFixed(2)),
+      };
+    });
+
+    // Sort by totalEarned descending
+    const sorted = rankings.sort((a, b) => b.totalEarned - a.totalEarned);
+
+    // Find the rank of the given userId
+    const myRank = sorted.findIndex((user) => user.id === userId);
+
+    if (myRank === -1) {
+      throw new ForbiddenException('User not found in ranking list');
+    }
+
+    return {
+      rank: myRank + 1, // ranks are 1-based
+      totalUsers: sorted.length,
+      ...sorted[myRank],
+    };
+  }
 }
