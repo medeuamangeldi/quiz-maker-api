@@ -1,198 +1,175 @@
----
+# 📚 QuizMaker API (Backend)
 
-# QuizMaker Backend API
-
-This repository contains the backend API for the QuizMaker application — a platform to create, manage, and take interactive quizzes with various question types.
-
-## Table of Contents
-
-- [Project Description](#project-description)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [API Overview](#api-overview)
-- [Authentication](#authentication)
-- [Architecture and Design](#architecture-and-design)
-- [Known Issues and Limitations](#known-issues-and-limitations)
-- [Future Improvements](#future-improvements)
+**QuizMaker** — это RESTful API-приложение, реализованное с использованием **NestJS**, **PostgreSQL**, **Prisma ORM** и **OpenAI API**, которое позволяет создавать и проходить интерактивные тесты. Оно поддерживает регистрацию пользователей, авторизацию, создание тестов вручную или с помощью искусственного интеллекта, прохождение тестов и получение рейтингов.
 
 ---
 
-## Project Description
+## Быстрый старт
 
-The QuizMaker backend provides RESTful endpoints for quiz creation, retrieval, user management, and answer submission. It supports multiple question formats such as single choice, multiple choice, and text answers. Users authenticate via JWT and can submit quiz answers to receive evaluation results.
-
----
-
-## Features
-
-- User registration and login with JWT authentication.
-- Create, update, and retrieve quizzes with complex questions.
-- Submit quiz answers and receive detailed results and scoring.
-- Secure endpoints protected by JWT authentication.
-- Comprehensive Swagger API documentation for easy exploration.
-
----
-
-## Technology Stack
-
-- **NestJS** — Node.js framework for building scalable server-side applications.
-- **TypeScript** — Typed JavaScript for improved maintainability.
-- **Prisma ORM** — Type-safe database access.
-- **PostgreSQL** — Relational database.
-- **JWT** — Authentication tokens.
-- **Swagger (OpenAPI)** — API documentation and exploration.
-
----
-
-## Installation
-
-1. Clone the repository:
+### 1. Клонирование и переход в директорию проекта
 
 ```bash
 git clone git@github.com:medeuamangeldi/quiz-maker-api.git
 cd quiz-maker-api
 ```
 
-2. Install dependencies:
+### 2. Конфигурация окружения
 
-```bash
-npm install
-```
-
-3. Set up your environment variables:
-
-Create a `.env` file with the following variables:
+Создайте файл `.env` в корне `backend` и укажите:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/quizmaker
+DATABASE_URL=postgresql://user:password@postgres:5432/quizmaker-db
 JWT_SECRET=your_jwt_secret
-PORT=3000
+OPENAI_API_KEY=your_openai_key
+PORT=3013
 ```
 
-4. Run database migrations and generate Prisma client:
+### 3. Запуск через Makefile
+
+Убедитесь, что Docker, Docker Compose, Makefile установлены:
 
 ```bash
-npx prisma migrate deploy
-npx prisma generate
+make start
+```
+
+### 4. Доступ
+
+- API: [http://localhost:3013](http://localhost:3013)
+- Swagger документация (если добавлена): [http://localhost:3013/api](http://localhost:3013/api)
+
+---
+
+## 🧱 Архитектура
+
+### 🐘 PostgreSQL
+
+- Сервис `postgres` в `docker-compose.yml`
+- Хранит пользователей, тесты, вопросы и ответы
+
+### ⚙️ NestJS + Prisma
+
+- Модули:
+  - `auth` — регистрация и логин
+  - `user` — профиль, рейтинг, информация о пользователях
+  - `test` — создание тестов, включая генерацию через OpenAI, и отправка результатов
+
+- ORM: **Prisma** для работы с PostgreSQL
+- Типизация DTO через `class-validator` и `class-transformer`
+
+### 🧠 Интеграция с OpenAI
+
+- Возможность генерировать тесты по теме через `/tests/generate`
+- Используется `CreateOpenAiTestDto`, который принимает:
+  - тему,
+  - количество вопросов,
+  - типы вопросов.
+
+---
+
+## 🔌 Доступные API Endpoints
+
+### `POST /auth/login`
+
+- Логин по email/username и паролю
+- Возвращает JWT токен
+
+### `POST /users`
+
+- Регистрация нового пользователя
+
+### `GET /users/me`
+
+- Получение информации о текущем пользователе
+
+### `GET /users/rankings`
+
+- Рейтинг пользователей по результатам тестов
+
+### `POST /tests`
+
+- Создание теста (требуется авторизация)
+
+### `POST /tests/generate`
+
+- Генерация теста через OpenAI (требуется авторизация)
+
+### `POST /tests/submit`
+
+- Отправка результатов прохождения теста
+
+---
+
+## 🧬 Структура базы данных (Prisma Schema)
+
+Модели:
+
+- **User** — содержит email, username, password, связаны с `TestSubmission`
+- **Test** — содержит title, tags, список `Question`
+- **Question** — тип, текст, варианты ответов, баллы, связь с тестом
+- **TestSubmission** — хранит ответы пользователя, баллы, связь с тестом и пользователем
+
+Пример поля `answers` в `TestSubmission`:
+
+```json
+{
+  "questionId": 1,
+  "answer": ["A", "C"]
+}
 ```
 
 ---
 
-Here's an improved and complete **README snippet** for your Docker setup and usage, based on the Dockerfile and docker-compose.yaml you provided:
+## 🧠 Уникальные подходы
+
+- **Генерация тестов с помощью ИИ**:
+  - Использование OpenAI API для создания тестов на лету
+  - Интерфейс позволяет выбрать тему и параметры генерации
+
+- **Полностью типизированный backend** с использованием DTO и декораторов NestJS
+- Использование `JwtAuthGuard` для защиты всех роутов
+- Валидация входных данных через `class-validator`
+- Поддержка `@nestjs/swagger` для автогенерации API-документации
 
 ---
 
-## Docker Setup and Usage
+## ⚖️ Компромиссы и технические решения
 
-### Dockerfile
-
-- Based on Node.js 24.4 Alpine image for a lightweight environment.
-- Installs dependencies and Prisma CLI.
-- Copies source and Prisma schema.
-- Generates Prisma client.
-- Builds the NestJS application.
-- Starts the app with migration in production mode (adjust command as needed).
-
-### docker-compose.yml
-
-- **db** service uses PostgreSQL 15 with persistent volume.
-- **app** service builds the NestJS app container.
-- Environment variables for database connection and JWT secret are configured.
-- Ports exposed: `3000` for app, `5432` for Postgres.
-- `app` depends on `db` service.
-- Runs with `start:dev` by default, change to `start:prod` for production.
+| Вопрос           | Решение                                                            |
+| ---------------- | ------------------------------------------------------------------ |
+| ORM              | Выбран **Prisma** за чистоту, удобную типизацию и простую миграцию |
+| Авторизация      | Простая JWT-авторизация вместо OAuth                               |
+| Хранение паролей | **bcrypt** + salting                                               |
+| Валидация данных | NestJS DTO + class-validator                                       |
+| Генерация тестов | Через OpenAI, вместо ручного добавления                            |
 
 ---
 
-### Usage commands (run from project root)
+## 🐞 Известные проблемы
 
-```bash
-# Build and start app + database containers in detached mode
-just start
-
-# Stop and remove all containers, networks, volumes
-just stop
-
-# Start only the database container
-just start-db
-
-# Run database migrations during development
-just migrate-dev
-```
+- Нет ограничений по количеству генераций тестов через OpenAI
+- Отсутствует система ролей (admin, user)
+- Возможна коллизия `@unique([userId, testId])` при повторной отправке теста
+- Нет пагинации в выдаче тестов или рейтингов
 
 ---
 
-### Notes
+## 🛠 Почему выбран этот стек
 
-- Make sure Docker and Docker Compose are installed on your system.
-- Adjust environment variables in `docker-compose.yml` as needed (e.g., `JWT_SECRET`, database credentials).
-- Use `start:prod` script in your Dockerfile and compose for production-ready builds.
-- Data for Postgres is persisted in the Docker volume `postgres_data`.
-
----
-
-## API Overview
-
-### Auth Endpoints
-
-- **POST /auth/login** — Login with username/email and password. Returns JWT token.
-
-### User Endpoints
-
-- **POST /users** — Create a new user.
-- **GET /users/email/\:email** — Get user by email (JWT required).
-- **GET /users/username/\:username** — Get user by username (JWT required).
-
-### Test Endpoints
-
-- **POST /tests** — Create a new test (JWT required).
-- **GET /tests** — Get all tests.
-- **GET /tests/\:id** — Get test by ID.
-- **POST /tests/submit** — Submit answers for a test and receive scoring and detailed results (JWT required).
+- **NestJS** — структурированный, масштабируемый фреймворк на базе TypeScript
+- **PostgreSQL** — надёжная, мощная СУБД
+- **Prisma ORM** — типизированный и удобный ORM
+- **Docker** — для консистентного и быстрого развёртывания
+- **OpenAI API** — мощный инструмент генерации контента
 
 ---
 
-## Authentication
+## 🧪 Тестирование
 
-- Uses JWT-based authentication.
-- Protected routes require a valid JWT token in the `Authorization` header: `Bearer <token>`.
-- Tokens are issued on successful login.
+Пока покрытие тестами отсутствует. Планируется использовать `Jest`.
 
 ---
 
-## Architecture and Design
+## 🤝 Контакты
 
-- RESTful API design with clear separation of concerns between controllers and services.
-- Controllers handle routing and input validation.
-- Services contain business logic and interact with Prisma ORM for database operations.
-- DTOs (Data Transfer Objects) define expected input shapes and include Swagger decorators for documentation.
-- Guards protect sensitive endpoints using JWT authentication.
-- Swagger UI provides interactive API documentation and testing.
-
----
-
-## Known Issues and Limitations
-
-- No support yet for updating or deleting tests and users.
-- No rate limiting or advanced security features implemented.
-- Basic error handling; could be improved with more granular exceptions.
-- User roles and permissions are not yet implemented.
-
----
-
-## Future Improvements
-
-- Add user roles and permissions (admin, user, etc.).
-- Implement test update and delete functionality.
-- Add pagination and filtering for test listing.
-- Improve error handling and validation.
-- Integrate real-time features for competitions or timed quizzes.
-- Implement analytics and user progress tracking.
-
----
-
-Feel free to contribute or open issues for bugs or feature requests!
-
----
+- GitHub Issues: [Открыть issue](https://github.com/medeuamangeldi/quiz-maker-api/issues)
+- Telegram: [@medeuedem](https://t.me/medeuedem)
